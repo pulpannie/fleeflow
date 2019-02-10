@@ -1,0 +1,70 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Chatroom</title>
+    <style>
+      .chat-content {
+        width: 80%;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { font: 13px Helvetica, Arial; }
+      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 80%; }
+      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      .chat-metadata{
+        width: 10%;
+        right: 0;
+        top: 30px;
+        position: fixed;
+      }
+      .users{
+        
+      }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+    </style>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<%var chatroomid_forscript = chatroom.id %>
+<% var user_nickname = user.nickname%>
+<script>
+  var chatroom_id = "<%=chatroomid_forscript%>";
+  var chatroom_nickname = "<%=user_nickname%>";
+  $(function () {
+    var socket = io();
+    $('form').submit(function(e){
+      e.preventDefault(); // prevents page reloading
+      socket.emit('chat message', $('#m').val());
+      $.ajax({
+        type: "POST",
+        url:"http://localhost:8880/chatroom/" + chatroom_id,
+        dataType: "application/x-www-form-urlencoded",
+        data: {message:$('#m').val()}
+      });
+      $('#m').val('');
+    });
+    socket.on('chat message', function(msg){
+      $('#messages').append($('<li>').text(chatroom_nickname + " : " + msg));
+    });
+  });
+</script>
+  </head>
+  <body>
+    <div class="chat-content">
+    <ul id="messages">
+      <% chatroom.messages.forEach(function(messages){%>
+        <li><strong><%=messages.nickname%></strong> : <%= messages.message %></li>
+      <%})%>
+    </ul>
+    <form> 
+      <input id="m" name="message" type="text"><button>Send</button>
+    </form>
+  </div>
+  <div class="chat-metadata">
+    <ul class="users">
+      <li><%= user.nickname%></li>
+    </ul>
+  </div>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Search results</title>
+	<link rel="stylesheet" href="search.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="index.css">
+</head>
+<body>
+	<% include ./partials/navbar %>
+	<div class="container">
+		<h1 class="header"> Search results for <%= searched %> </h1>
+		<div class= "container-of-chatrooms">
+		<div class = "parent-chatroom">
+		<% chatrooms.forEach(function(chatroom){%>
+				<div class="chatroom rounded">
+					<h2><a href="/chatroom/<%=chatroom.id%>"><%=chatroom.name%></a></h2>
+					<h4> Created by: <%= chatroom.king_user_id%> </h4>
+				</div>
+			<%});%>
+		</div>
+	</div>
+	</div>
+</body>
+</html>

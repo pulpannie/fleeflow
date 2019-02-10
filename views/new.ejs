@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>New chatroom</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="index.css">
+</head>
+<body>
+	<% include ./partials/navbar%>
+<div class="container">
+	<div class="row">
+		<h1 style="margin: 25px auto;">Create a new chatroom</h1>
+	</div>
+	<div class="row">
+		<div style="width: 30%; margin: 25px auto;">
+			<form action = "/" method= "POST">
+				<div class="form-group">
+				<input class="form-control" type="text" name="name" placeholder="chatroom name">
+				</div>
+				<div class="form-group">
+				<button class="btn btn-lg btn-primary btn-block">Create!</button>
+				</div>
+			</form>
+			<a href="/">Go back</a>
+		</div>
+	</div>
+</div>
+
+
+</body>
+</html>

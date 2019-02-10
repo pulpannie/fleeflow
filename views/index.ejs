@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<link rel="stylesheet" href="index.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+	
+<!-- 	<script
+  src="https://code.jquery.com/jquery-3.3.1.js"
+  integrity="sha256-2Kok7MbOyxpgUVvAk/HJ2jigOSYS2auK4Pfzbm7uH60="
+  crossorigin="anonymous"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script type="text/javascript" src="typeahead.min.js"></script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+    	$('input.typeahead').typeahead({
+	        name: 'searched',
+	        remote: 'http://localhost:8888/search?q=%QUERY',
+	        limit: 10
+	    });
+	});
+</script> -->
+<!-- <script>
+$('#form-autocomplete').mdb_autocomplete({
+data: searchdata
+});
+</script> -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<% include partials/navbar_index %>
+	<div class="parent-searchbox">
+		<div class="searchbox md-form">
+		<form action="/search" method="GET">
+			<input type="search" id="form-autocomplete" class="search form-control mdb-autocomplete"
+			name="searchText" placeholder="I am currently...">
+		</form>
+		</div>
+	</div>
+	<div class="parent-new">
+		<div class="new">
+			<a href="/new" class="btn btn-primary btn-circle btn-lg">New</a>
+		</div>
+	</div>
+</body>
+</html>
