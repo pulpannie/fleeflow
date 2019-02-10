@@ -16,7 +16,7 @@ var express = require('express'),
 	Message = require("./models/message"),
 	Chatroom = require("./models/chatroom");
 
-mongoose.connect("mongodb://pulpannie:tiger120308@ds129085.mlab.com:29085/project", {useNewUrlParser: true});
+mongoose.connect(process.env.DATABASEURL, {useNewUrlParser: true});
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
