@@ -2,8 +2,9 @@
 
 var express = require('express'),
 	app = express(),
-	http = require('http').Server(app),
-	io = require('socket.io')(http),
+	http = require('http'),
+	server = http.createServer(app)
+	io = require('socket.io').listen(server),
 	mysql = require("mysql"),
 	mongoose = require("mongoose"),
 	passport = require('passport'),
@@ -253,6 +254,6 @@ function isLoggedIn(req, res, next){
 // 	});
 
 
-http.listen(process.env.PORT || 8080, function(){
+server.listen(process.env.PORT || 8080, function(){
 	console.log("Server started!");
 })
