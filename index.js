@@ -4,7 +4,9 @@ var express = require('express'),
 	app = express(),
 	http = require('http'),
 	server = http.createServer(app),
-	io = require('socket.io').listen(server),
+	io = require('socket.io')({
+		transports : ["xhr-polling"]}),
+	io = io.listen(server),
 	mysql = require("mysql"),
 	mongoose = require("mongoose"),
 	passport = require('passport'),
@@ -34,6 +36,7 @@ app.use(cookieParser());
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
+
 
 passport.serializeUser(function(user, done){
 	done(null, user.id);
