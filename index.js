@@ -48,12 +48,13 @@ passport.deserializeUser(function(id, done){
 
 
 var connection = mysql.createConnection({
-	host: "us-cdbr-iron-east-03.cleardb.net",
-	user: "bc2ff3490d7a9c",
-	password: "be486f6c",
-	database: "heroku_1583d4b1e633f9f"
+	host: "project.chb2v39hpwdl.ap-northeast-2.rds.amazonaws.com",
+	port: "3306",
+	user: "pulpannie",
+	password: "tiger120308",
+	database: "projectdb"
 })
-connection.connect();
+connection.connect(function(err));
 
 app.get("/", function(req, res){
 	

@@ -1,13 +1,15 @@
+//dummy file
+
 const mysql = require('mysql');
 
 let connection = {};
 const createConnection = function() {
     connection = mysql.createConnection(
         {
-            host     : 'localhost',
-            user     : 'annie',
-            password : 'password',
-            database : 'projectdb'
+            host     : '',
+            user     : '',
+            password : '',
+            database : ''
         }
     );
     return connection;
@@ -29,7 +31,8 @@ let str_createUsers = `create table if not exists users(
     )`;
 
     let str_createChatrooms = `create table if not exists chatrooms(
-    id int NOT NULL auto_increment,
+    id varchar(50) NOT NULL,
+    name varchar(100) NOT NULL,
     king_user_id int NOT NULL,
     password_ver tinyint(1) NOT NULL default 0,
     background_ver tinyint(1) NOT NULL default 0,
@@ -40,17 +43,61 @@ let str_createUsers = `create table if not exists users(
     )`;
 
     let str_createChatroomPassword = `create table if not exists chatroompasswords(
-    chatroom_id int NOT NULL,
+    chatroom_id varchar(50) NOT NULL,
     password varchar(20) NOT NULL,
     PRIMARY KEY (chatroom_id),
     FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id) ON DELETE CASCADE)`;
 
     let str_createBackground = `create table if not exists backgrounds(
-    id int NOT NULL auto_increment,
-    background varchar(100),
-    PRIMARY KEY (id),
-    FOREIGN KEY (id) REFERENCES chatrooms(id) ON DELETE CASCADE
+    chatroom_id varchar(50) NOT NULL,
+    background varchar(100) NOT NULL,
+    PRIMARY KEY (chatroom_id),
+    FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id) ON DELETE CASCADE
     )`;
+
+create table if not exists `users`(
+    `id` int NOT NULL AUTO_INCREMENT,
+    `password` varchar(100) NOT NULL,
+    `nickname` varchar(20) NOT NULL,
+    `email` varchar(45) NOT NULL,
+    `authenticated` tinyint(1) NOT NULL default 0,
+    PRIMARY KEY (`id`)
+ );
+		
+create table if not exists `chatgroups` (
+    `id` int NOT NULL AUTO_INCREMENT,
+    `user_id` int NOT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`user_id`) REFERENCES users(`id`) ON DELETE CASCADE
+    );
+	
+create table if not exists `chatrooms`(
+    `id` varchar(50) NOT NULL,
+	`name` varchar(100) NOT NULL,
+    `king_user_id` int NOT NULL,
+    `password_ver` tinyint(1) NOT NULL default 0,
+    `background_ver` tinyint(1) NOT NULL default 0,
+    `group_id` int NOT NULL,
+    PRIMARY KEY (`id`),
+    FOREIGN KEY (`king_user_id`) REFERENCES users(`id`) ON DELETE CASCADE,
+    FOREIGN KEY (`group_id`) REFERENCES chatgroups(`id`) ON DELETE CASCADE
+    );
+		
+	create table if not exists `chatroompasswords`(
+    `chatroom_id` varchar(50) NOT NULL,
+    `password` varchar(20) NOT NULL,
+    PRIMARY KEY (`chatroom_id`),
+    FOREIGN KEY (`chatroom_id`) REFERENCES chatrooms(`id`) ON DELETE CASCADE
+	);
+		
+	create table if not exists `backgrounds`(
+    `chatroom_id` varchar(50) NOT NULL,
+    `background` varchar(100) NOT NULL,
+    PRIMARY KEY (`chatroom_id`),
+    FOREIGN KEY (`chatroom_id`) REFERENCES chatrooms(`id`) ON DELETE CASCADE
+    );
+
+
 module.exports = {
 
 	createUsers: function(){
