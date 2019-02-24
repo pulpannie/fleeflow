@@ -54,7 +54,7 @@ var connection = mysql.createConnection({
 	password: "tiger120308",
 	database: "projectdb"
 })
-connection.connect(function(err));
+connection.connect();
 
 app.get("/", function(req, res){
 	
