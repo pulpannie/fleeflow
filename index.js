@@ -48,19 +48,17 @@ passport.deserializeUser(function(id, done){
 
 
 var connection = mysql.createConnection({
-	host: "project.chb2v39hpwdl.ap-northeast-2.rds.amazonaws.com",
-	port: "3306",
-	user: "pulpannie",
-	password: "tiger120308",
+	host: "localhost",
+	user: "annie",
+	password: "password",
 	database: "projectdb"
 })
-connection.connect(function(err));
+connection.connect();
 
 app.get("/", function(req, res){
 	
 	if (req.user){
 	connection.query('select * from users where id=?', [req.user], function(err, rows){
-		console.log(JSON.stringify(rows[0]));
 		if (err) throw err;
 		res.render("index", {user: rows[0]});
 	});
@@ -209,7 +207,7 @@ app.get('/chatroom/:id', isLoggedIn, function(req, res){
 	})
 })
 app.post('/chatroom/:id', function(req, res){
-	console.log("hi");
+	console.log("req.user first is" + req.user);
 	Chatroom.findById(req.params.id, function(err, chatroom){
 		if(err){
 			console.log(err);
@@ -219,6 +217,7 @@ app.post('/chatroom/:id', function(req, res){
 				if (err){
 					console.log(err);
 				} else {
+					console.log("req.user is" + req.user);
 					connection.query('select nickname from users where id=?',[req.user], function(err, rows){
 						message.nickname = rows[0].nickname;
 						message.save();
@@ -258,6 +257,6 @@ function isLoggedIn(req, res, next){
 // 	});
 
 
-server.listen(process.env.PORT || 8080, function(){
+server.listen(process.env.PORT || 5000, function(){
 	console.log("Server started!");
 })
