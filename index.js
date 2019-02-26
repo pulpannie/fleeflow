@@ -48,9 +48,9 @@ passport.deserializeUser(function(id, done){
 
 
 var connection = mysql.createConnection({
-	host: "localhost",
-	user: "annie",
-	password: "password",
+	host: "project.chb2v39hpwdl.ap-northeast-2.rds.amazonaws.com",
+	user: "pulpannie",
+	password: "tiger120308",
 	database: "projectdb"
 })
 connection.connect();
