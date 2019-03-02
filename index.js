@@ -49,8 +49,8 @@ passport.deserializeUser(function(id, done){
 
 var connection = mysql.createConnection({
 	host: "project.chb2v39hpwdl.ap-northeast-2.rds.amazonaws.com",
-	user: "pulpannie",
-	password: "tiger120308",
+	user: "admin",
+	password: "hello2019!",
 	database: "projectdb"
 })
 connection.connect();
@@ -188,11 +188,7 @@ passport.use('join-local', new LocalStrategy({
 ))
 
 
-io.on('connection', function(socket){
-	socket.on('chat message', function(msg){
-		io.emit('chat message', msg);
-	})
-})
+
 
 app.get('/chatroom/:id', isLoggedIn, function(req, res){
 	Chatroom.findById(req.params.id).populate("messages").exec(function(err, foundChatroom){
@@ -223,12 +219,17 @@ app.post('/chatroom/:id', function(req, res){
 						message.save();
 						chatroom.messages.push(message);
 						chatroom.save();
+						io.emit('chat message', message);
 					})
 				}
 			})
 		}
 	})
 })
+
+io.on('connection', function(){
+	console.log("a user is connected");
+});
 
 function isLoggedIn(req, res, next){
 	if (req.isAuthenticated()){
