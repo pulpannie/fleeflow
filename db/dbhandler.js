@@ -14,54 +14,56 @@ const createConnection = function() {
     );
     return connection;
 };
+
+////UPDATED 05/05/2019
 let str_createUsers = `create table if not exists users(
-    id int NOT NULL AUTO_INCREMENT,
+    user_id int NOT NULL AUTO_INCREMENT,
     password varchar(100) NOT NULL,
     nickname varchar(20) NOT NULL,
     email varchar(45) NOT NULL,
     authenticated tinyint(1) NOT NULL default 0,
-    PRIMARY KEY (id)
+    PRIMARY KEY (user_id)
     )`;
 
     let str_createGroups = `create table if not exists chatgroups (
-    id int NOT NULL AUTO_INCREMENT,
-    user_id int NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    chatgroup_id int NOT NULL AUTO_INCREMENT,
+    chatroom_id varchar(50) NOT NULL,
+    user_id int NOT NULL UNIQUE,
+    PRIMARY KEY (chatgroup_id),
+    FOREIGN KEY (chatroom_id) REFERENCES chatrooms(chatroom_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
     )`;
 
     let str_createChatrooms = `create table if not exists chatrooms(
-    id varchar(50) NOT NULL,
-    name varchar(100) NOT NULL,
+    chatroom_id varchar(50) NOT NULL,
+    chatroom_name varchar(100) NOT NULL,
     king_user_id int NOT NULL,
     password_ver tinyint(1) NOT NULL default 0,
     background_ver tinyint(1) NOT NULL default 0,
-    group_id int NOT NULL,
-    PRIMARY KEY (id),
-    FOREIGN KEY (king_user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (group_id) REFERENCES chatgroups(id) ON DELETE CASCADE
+    PRIMARY KEY (chatroom_id),
+    FOREIGN KEY (king_user_id) REFERENCES users(user_id) ON DELETE CASCADE
     )`;
 
     let str_createChatroomPassword = `create table if not exists chatroompasswords(
     chatroom_id varchar(50) NOT NULL,
     password varchar(20) NOT NULL,
     PRIMARY KEY (chatroom_id),
-    FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id) ON DELETE CASCADE)`;
+    FOREIGN KEY (chatroom_id) REFERENCES chatrooms(chatroom_id) ON DELETE CASCADE)`;
 
-    let str_createBackground = `create table if not exists backgrounds(
+    let str_createBackground = `create table if not exists chatroombackgrounds(
     chatroom_id varchar(50) NOT NULL,
     background varchar(100) NOT NULL,
     PRIMARY KEY (chatroom_id),
-    FOREIGN KEY (chatroom_id) REFERENCES chatrooms(id) ON DELETE CASCADE
+    FOREIGN KEY (chatroom_id) REFERENCES chatrooms(chatroom_id) ON DELETE CASCADE
     )`;
 
 create table if not exists `users`(
-    `id` int NOT NULL AUTO_INCREMENT,
+    `user_id` int NOT NULL AUTO_INCREMENT,
     `password` varchar(100) NOT NULL,
     `nickname` varchar(20) NOT NULL,
     `email` varchar(45) NOT NULL,
     `authenticated` tinyint(1) NOT NULL default 0,
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (`user_id`)
  );
 		
 create table if not exists `chatgroups` (

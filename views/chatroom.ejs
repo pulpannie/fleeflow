@@ -12,22 +12,43 @@
       form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
       form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
       .chat-metadata{
-        width: 10%;
+        width: 20%;
         right: 0;
         top: 30px;
         position: fixed;
       }
       .users{
+        padding-left: 30px;
+      }
+    /*  #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages { padding: 5px 10px; }
+      #messages div:nth-child(odd) { background: #eee; }*/
+      .message {
+        font-size: 17px;
+        padding-top: 5px;
+        padding-left: 15px;
+      }
+
+      .message_nickname {
+        display: inline; 
+        font-weight: bold;
         
       }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
+
+      .message_content {
+        padding-left: 5px;
+        padding-top: 10px;
+        display: inline;
+        color: grey;
+      }
+      #king {
+        color: red;
+      }
     </style>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <%var chatroomid_forscript = chatroom.id %>
-<% var user_nickname = user.nickname%>
+<% var user_nickname = user%>
 <script>
   var chatroom_id = "<%=chatroomid_forscript%>";
   var chatroom_nickname = "<%=user_nickname%>";
@@ -45,26 +66,36 @@
       $('#m').val('');
     });
     socket.on('chat message', function(msg){
-      $('#messages').append($('<li>').text("<strong>" + msg.nickname + " : " + msg.message) + "</strong>");
+      $('#messages').append("<div class='message'><div class='message_nickname'>" + msg.nickname + "</div>" + ": " + "<div class='message_content'>" + msg.message + "</div></div>");
     });
   });
 </script>
   </head>
   <body>
     <div class="chat-content">
-    <ul id="messages">
+    <div id="messages">
       <% chatroom.messages.forEach(function(messages){%>
-        <li><strong><%=messages.nickname%></strong> : <%= messages.message %></li>
+      <div class="message">
+        <div class="message_nickname"><%=messages.nickname%></div>: <div class="message_content"><%= messages.message %></div>
+      </div>
       <%})%>
-    </ul>
+    </div>
     <form> 
       <input id="m" name="message" type="text"><button>Send</button>
     </form>
   </div>
   <div class="chat-metadata">
-    <ul class="users">
-      <li><%= user.nickname%></li>
-    </ul>
+    <div class="users">
+      <h1>Users</h1>
+      <div>Online</div>
+      <% roomData.forEach(function(nickname){%>
+        <% if (nickname.user_id == nickname.king_user_id){ %>
+          <div id='king'><%= nickname.nickname%></div>
+        <% } else {%>
+          <div><%=nickname.nickname%></div>
+        <%}%>
+      <%});%>
+    </div>
   </div>
   </body>
 </html>

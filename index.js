@@ -39,11 +39,11 @@ app.use(flash());
 
 
 passport.serializeUser(function(user, done){
-	done(null, user.id);
+	done(null, user.user_id);
 });
 
-passport.deserializeUser(function(id, done){	
-	done(null, id);
+passport.deserializeUser(function(user_id, done){	
+	done(null, user_id);
 });
 
 
@@ -58,7 +58,7 @@ connection.connect();
 app.get("/", function(req, res){
 	
 	if (req.user){
-	connection.query('select * from users where id=?', [req.user], function(err, rows){
+	connection.query('select * from users where user_id=?', [req.user], function(err, rows){
 		if (err) throw err;
 		res.render("index", {user: rows[0]});
 	});
@@ -67,7 +67,7 @@ app.get("/", function(req, res){
 	}
 });
 
-//really shit code, nestedhell but I gave it my best :(
+//really shit code, callbackhell but I gave it my best :(
 app.post("/", function(req, res){
 	var chatroomId;
 	var chatgroupId;
@@ -77,19 +77,17 @@ app.post("/", function(req, res){
 		}
 		console.log("chatroomid is" + newlyCreated._id);
 		chatroomId = newlyCreated._id; 	
-		connection.query('INSERT INTO chatgroups set ?', {user_id: req.user}, function(err, result){
-		if(err) throw err;
-		chatgroupId =result.insertId;
-		var sql = {id:chatroomId, name: req.body.name, king_user_id: req.user, group_id: chatgroupId};
-		console.log("hi" + chatroomId);
+		var sql = {chatroom_id:chatroomId, chatroom_name: req.body.name, king_user_id: req.user};
 		connection.query('INSERT INTO chatrooms set ?', sql, function(err, rows){
-		if(err) console.log("wow" + err);
+			var chatgroup = {user_id: req.user, chatroom_id: chatroomId};
+			connection.query('INSERT INTO chatgroups set ?', chatgroup, function(err){
+				if(err) console.log(err);
+			})
 		res.redirect("/");
 	})	// get id of chatgroup mysql table
 	})//get id of Chatroom mongoose collection
-	})
-
 })
+
 
 app.get("/new", isLoggedIn, function(req, res){
 	res.render("new");
@@ -97,7 +95,7 @@ app.get("/new", isLoggedIn, function(req, res){
 
 app.get('/search', function(req, res){
 	// var search = createSearch(req.query);
-	connection.query('SELECT * FROM chatrooms WHERE name LIKE "%' + req.query.searchText + '%"', function(err, rows){
+	connection.query('SELECT * FROM chatrooms WHERE chatroom_name LIKE "%' + req.query.searchText + '%"', function(err, rows){
 		if (err) console.log("connection error is" + JSON.stringify(err));
 		else if (rows.length == 0) {
 			return console.log("rows:" + rows[0] + " " + Error);
@@ -147,8 +145,6 @@ passport.use('login-local', new LocalStrategy({
 	}
 ))
 
-
-
 app.get("/join", function(req, res){
 	var msg;
 	var errMsg = req.flash('error');
@@ -187,21 +183,34 @@ passport.use('join-local', new LocalStrategy({
 	}
 ))
 
+app.get('/logout', function(req, res){
+	req.logout();
+	res.redirect("/");
+})
 
 
 
 app.get('/chatroom/:id', isLoggedIn, function(req, res){
+	console.log("req.user first is" + req.user);
 	Chatroom.findById(req.params.id).populate("messages").exec(function(err, foundChatroom){
 		if(err){
 			console.log(err);
 		} else {
 			console.log(foundChatroom);
-			connection.query('select nickname from users where id=?',[req.user], function(err, rows){
-			res.render("chatroom", {user: rows[0], chatroom: foundChatroom})
-			})
+			connection.query('INSERT IGNORE INTO chatgroups set ?', {user_id: req.user, chatroom_id: req.params.id}, function(err){
+				var chat_params_id= req.params.id;
+				var sql = "SELECT * FROM users natural join chatrooms natural join chatgroups WHERE chatgroups.chatroom_id='" + req.params.id + "'";
+				connection.query(sql, function(err, results){
+					console.log("results is" + results);
+					connection.query('SELECT nickname FROM users WHERE users.user_id =' + req.user, function(err, rows){
+						res.render("chatroom", {user: rows[0].nickname, roomData: results, chatroom: foundChatroom})
+					})
+				})
+			})	
 		}
 	})
 })
+
 app.post('/chatroom/:id', function(req, res){
 	console.log("req.user first is" + req.user);
 	Chatroom.findById(req.params.id, function(err, chatroom){
@@ -214,7 +223,7 @@ app.post('/chatroom/:id', function(req, res){
 					console.log(err);
 				} else {
 					console.log("req.user is" + req.user);
-					connection.query('select nickname from users where id=?',[req.user], function(err, rows){
+					connection.query('select nickname from users where user_id=?',[req.user], function(err, rows){
 						message.nickname = rows[0].nickname;
 						message.save();
 						chatroom.messages.push(message);
@@ -227,8 +236,9 @@ app.post('/chatroom/:id', function(req, res){
 	})
 })
 
+
 io.on('connection', function(){
-	console.log("a user is connected");
+	console.log("connected!");
 });
 
 function isLoggedIn(req, res, next){
