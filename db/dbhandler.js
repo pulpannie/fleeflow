@@ -26,10 +26,9 @@ let str_createUsers = `create table if not exists users(
     )`;
 
     let str_createGroups = `create table if not exists chatgroups (
-    chatgroup_id int NOT NULL AUTO_INCREMENT,
     chatroom_id varchar(50) NOT NULL,
-    user_id int NOT NULL UNIQUE,
-    PRIMARY KEY (chatgroup_id),
+    user_id int NOT NULL,
+    PRIMARY KEY (chatroom_id, user_id),
     FOREIGN KEY (chatroom_id) REFERENCES chatrooms(chatroom_id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
     )`;
@@ -84,7 +83,7 @@ create table if not exists `chatrooms`(
     FOREIGN KEY (`king_user_id`) REFERENCES users(`id`) ON DELETE CASCADE,
     FOREIGN KEY (`group_id`) REFERENCES chatgroups(`id`) ON DELETE CASCADE
     );
-		
+	
 	create table if not exists `chatroompasswords`(
     `chatroom_id` varchar(50) NOT NULL,
     `password` varchar(20) NOT NULL,

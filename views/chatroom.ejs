@@ -53,18 +53,27 @@
   var chatroom_id = "<%=chatroomid_forscript%>";
   var chatroom_nickname = "<%=user_nickname%>";
   $(function () {
+    //socket.io 서버에 접속하기 위한 메소드
     var socket = io();
     $('form').submit(function(e){
       e.preventDefault(); // prevents page reloading
+      //서버로 메세지 송신
       socket.emit('chat message', $('#m').val());
       $.ajax({
         type: "POST",
-        url:"<%=process.env.PORT%>" + "/chatroom/" + chatroom_id,
+        url: "<%=process.env.PORT%>" + "/chatroom/" + chatroom_id,
         dataType: "application/x-www-form-urlencoded",
         data: {message:$('#m').val()}
       });
+      .fail(function(){
+        alert("요천실패")
+      })
+      .always(function(){
+        alert("요청완료")
+      })
       $('#m').val('');
     });
+    //접속되어있는 서버로부터 메세지 수신
     socket.on('chat message', function(msg){
       $('#messages').append("<div class='message'><div class='message_nickname'>" + msg.nickname + "</div>" + ": " + "<div class='message_content'>" + msg.message + "</div></div>");
     });

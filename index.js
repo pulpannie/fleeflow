@@ -5,10 +5,11 @@ var express = require('express'),
 	http = require('http'),
 	server = http.createServer(app),
 	io = require('socket.io')({
-		transports : ["xhr-polling"]}),
+		transports : ["xhr-polling"], wsEngine: 'ws'}),
 	io = io.listen(server),
 	mysql = require("mysql"),
 	mongoose = require("mongoose"),
+	Memcached = require("memcached"),
 	passport = require('passport'),
 	LocalStrategy = require('passport-local').Strategy,
 	bcrypt = require('bcrypt'),
@@ -27,7 +28,8 @@ app.use(bodyParser.json());
 app.use(express.static(__dirname + "/public"));
 app.use(session({
 	secret: "Annie loves Kirby!",
-	saveUninitialized: false,
+	saveUninitialized: true,
+	resave: true,
 	cookie: {
 		maxAge: 1000 * 60 * 60
 	}
@@ -46,7 +48,16 @@ passport.deserializeUser(function(user_id, done){
 	done(null, user_id);
 });
 
+//create object for memcached
+var memcached = new Memcached();
+//code to connect with memcached server
+memcached.connect('localhost:11211', function(err,conn){
+	if(err){
+		console.log(conn.server,'error while memcached connection!');
+	}
+})
 
+//connect to mysql
 var connection = mysql.createConnection({
 	host: "project.chb2v39hpwdl.ap-northeast-2.rds.amazonaws.com",
 	user: "admin",
@@ -191,20 +202,22 @@ app.get('/logout', function(req, res){
 
 
 app.get('/chatroom/:id', isLoggedIn, function(req, res){
-	console.log("req.user first is" + req.user);
+	console.log("1req.user first is" + req.user);
 	Chatroom.findById(req.params.id).populate("messages").exec(function(err, foundChatroom){
 		if(err){
 			console.log(err);
 		} else {
-			console.log(foundChatroom);
 			connection.query('INSERT IGNORE INTO chatgroups set ?', {user_id: req.user, chatroom_id: req.params.id}, function(err){
 				var chat_params_id= req.params.id;
 				var sql = "SELECT * FROM users natural join chatrooms natural join chatgroups WHERE chatgroups.chatroom_id='" + req.params.id + "'";
 				connection.query(sql, function(err, results){
-					console.log("results is" + results);
+					if(err){
+					console.log(err);
+					} else {
 					connection.query('SELECT nickname FROM users WHERE users.user_id =' + req.user, function(err, rows){
-						res.render("chatroom", {user: rows[0].nickname, roomData: results, chatroom: foundChatroom})
+						res.render("chatroom", {user: rows[0].nickname, roomData: results, chatroom: foundChatroom});
 					})
+				}
 				})
 			})	
 		}
@@ -212,7 +225,7 @@ app.get('/chatroom/:id', isLoggedIn, function(req, res){
 })
 
 app.post('/chatroom/:id', function(req, res){
-	console.log("req.user first is" + req.user);
+	console.log("2req.user first is" + req.user);
 	Chatroom.findById(req.params.id, function(err, chatroom){
 		if(err){
 			console.log(err);
@@ -224,10 +237,15 @@ app.post('/chatroom/:id', function(req, res){
 				} else {
 					console.log("req.user is" + req.user);
 					connection.query('select nickname from users where user_id=?',[req.user], function(err, rows){
+						if(err){
+							console.log(err);
+						}
+						console.log('nickname is' + rows[0].nickname);
 						message.nickname = rows[0].nickname;
 						message.save();
 						chatroom.messages.push(message);
 						chatroom.save();
+						//접속된 모든 클라이언트한테 메세지를 전송한다.
 						io.emit('chat message', message);
 					})
 				}
@@ -236,8 +254,11 @@ app.post('/chatroom/:id', function(req, res){
 	})
 })
 
-
-io.on('connection', function(){
+//connection event handler
+//connection이 수립되면 function의 인자로 socket이 들어온다.
+//io 객체는 연결된 전체 클라이언트와의 상호작용을 위한 객체, socket객체는 개별 클라이언트와의 상호작용을 위한 객체다.
+//'connection'은 connection event의 이름.
+io.on('connection', function(socket){
 	console.log("connected!");
 });
 
