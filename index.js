@@ -212,7 +212,7 @@ app.get('/chatroom/:id', isLoggedIn, function(req, res){
 				var sql = "SELECT * FROM users natural join chatrooms natural join chatgroups WHERE chatgroups.chatroom_id='" + req.params.id + "'";
 				connection.query(sql, function(err, results){
 					if(err){
-					console.log(err);
+					console.log("Error" + err);
 					} else {
 					connection.query('SELECT nickname FROM users WHERE users.user_id =' + req.user, function(err, rows){
 						res.render("chatroom", {user: rows[0].nickname, roomData: results, chatroom: foundChatroom});
@@ -240,7 +240,6 @@ app.post('/chatroom/:id', function(req, res){
 						if(err){
 							console.log(err);
 						}
-						console.log('nickname is' + rows[0].nickname);
 						message.nickname = rows[0].nickname;
 						message.save();
 						chatroom.messages.push(message);
