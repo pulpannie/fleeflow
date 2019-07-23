@@ -49,13 +49,13 @@ passport.deserializeUser(function(user_id, done){
 });
 
 //create object for memcached
-var memcached = new Memcached();
-//code to connect with memcached server
-memcached.connect('localhost:11211', function(err,conn){
-	if(err){
-		console.log(conn.server,'error while memcached connection!');
-	}
-})
+// var memcached = new Memcached();
+// //code to connect with memcached server
+// memcached.connect('localhost:11211', function(err,conn){
+// 	if(err){
+// 		console.log(conn.server,'error while memcached connection!');
+// 	}
+// })
 
 //connect to mysql
 var connection = mysql.createConnection({
