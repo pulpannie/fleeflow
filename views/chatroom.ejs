@@ -61,7 +61,7 @@
       socket.emit('chat message', $('#m').val());
       $.ajax({
         type: "POST",
-        url: "<%=process.env.PORT%>" + "/chatroom/" + chatroom_id,
+        url: "/chatroom/" + chatroom_id,
         dataType: "application/x-www-form-urlencoded",
         data: {message:$('#m').val()}
       });
