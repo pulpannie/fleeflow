@@ -193,7 +193,7 @@ passport.use('join-local', new LocalStrategy({
 							throw err;
 						}
 						var token = new Token({_userId: rows.insertId, token: crypto.randomBytes(16).toString('hex')});
-
+						console.log(token);
 						//send the email
 						var transporter = nodemailer.createTransport({service: 'gmail', auth: {user:'fleeflow.official@gmail.com', pass: 'hello2019!'}});
 						var mailOptions = {from: 'fleeflow.official@gmail.com', to: email, subject: 'Account Verification Token', text:'Hello, please verify by clicking the link: \nhttp:\/\/'+req.headers.host + '\/verification\/' + token.token + '\/'+email+'.\n'};
@@ -201,6 +201,7 @@ passport.use('join-local', new LocalStrategy({
 							if (err){
 								throw err;
 							} else {
+								token.save();
 								return done(null, {'email': email, 'user_id': rows.insertId});
 							}
 						})
@@ -228,8 +229,9 @@ function VerificationController(req, res){
 				_userId: rows[0].user_id,
 				token: req.params.token
 			}, function(err, foundToken){
+				console.log(foundToken);
 				if(foundToken){
-					connection.query("UPDATE users SET authenticated=1 WHERE email='"+req.params.email+"'", function(err, res){
+					connection.query("UPDATE users SET authenticated=1 WHERE email='"+req.params.email+"'", function(err, row){
 						if(err){
 							return res.status(403).json('verification failed');
 						}else{

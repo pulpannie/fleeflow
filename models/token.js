@@ -2,8 +2,8 @@
 var mongoose = require("mongoose");
 
 //SCHEMA SETUP
-const tokenSchema = new mongoose.Schema({
-	_userId: {type: Number, required: true, ref: 'User'},
+var tokenSchema = new mongoose.Schema({
+	_userId: {type: Number, required: true},
 	token: {type: String, required: true},
 	createdAt: {type: Date, required: true, default: Date.now, expires: 43200}
 })
