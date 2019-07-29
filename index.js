@@ -9,7 +9,8 @@ var express = require('express'),
 	io = io.listen(server),
 	mysql = require("mysql"),
 	mongoose = require("mongoose"),
-	Memcached = require("memcached"),
+	crypto = require("crypto"),
+	nodemailer = require("nodemailer"),
 	passport = require('passport'),
 	LocalStrategy = require('passport-local').Strategy,
 	bcrypt = require('bcrypt'),
@@ -18,7 +19,8 @@ var express = require('express'),
 	session = require("express-session"),
 	cookieParser = require("cookie-parser"),
 	Message = require("./models/message"),
-	Chatroom = require("./models/chatroom");
+	Chatroom = require("./models/chatroom"),
+	Token = require("./models/token");
 
 mongoose.connect(process.env.DATABASEURL, {useNewUrlParser: true});
 
@@ -48,15 +50,6 @@ passport.deserializeUser(function(user_id, done){
 	done(null, user_id);
 });
 
-//create object for memcached
-// var memcached = new Memcached();
-// //code to connect with memcached server
-// memcached.connect('localhost:11211', function(err,conn){
-// 	if(err){
-// 		console.log(conn.server,'error while memcached connection!');
-// 	}
-// })
-
 //connect to mysql
 var connection = mysql.createConnection({
 	host: "project.chb2v39hpwdl.ap-northeast-2.rds.amazonaws.com",
@@ -65,6 +58,18 @@ var connection = mysql.createConnection({
 	database: "projectdb"
 })
 connection.connect();
+
+//connect to nodemailer
+let transporter = nodemailer.createTransport({
+	service: 'gmail',
+	auth: {
+		user:'fleeflow.official@gmail.com',
+		pass: 'hello2019!'
+	}
+});
+
+
+
 
 app.get("/", function(req, res){
 	
@@ -164,7 +169,7 @@ app.get("/join", function(req, res){
 })
 
 app.post("/join", passport.authenticate('join-local', {
-	successRedirect: '/',
+	successRedirect: '/verification/request',
 	failureRedirect: '/join',
 	failureFlash: true
 }));
@@ -177,7 +182,6 @@ passport.use('join-local', new LocalStrategy({
 	function(req, email, password, done){
 		connection.query('select * from users where email=?', [email], function (err, rows){
 			if (err) { return done(err);}
-
 			if (rows.length) {
 				return done(null, false, {message: 'This email already has an account'});
 			}
@@ -185,14 +189,65 @@ passport.use('join-local', new LocalStrategy({
 				bcrypt.hash(password, 10, function(err, hash){
 					var sql = {email: email, password: hash, nickname: req.body.nickname};
 					connection.query('insert into users set ?', sql, function (err, rows){
-						if (err) throw err;
-						return done(null, {'email': email, 'id': rows.insertId});
+						if (err) {
+							throw err;
+						}
+						var token = new Token({_userId: rows.insertId, token: crypto.randomBytes(16).toString('hex')});
+
+						//send the email
+						var transporter = nodemailer.createTransport({service: 'gmail', auth: {user:'fleeflow.official@gmail.com', pass: 'hello2019!'}});
+						var mailOptions = {from: 'fleeflow.official@gmail.com', to: email, subject: 'Account Verification Token', text:'Hello, please verify by clicking the link: \nhttp:\/\/'+req.headers.host + '\/verification\/' + token.token + '\/'+email+'.\n'};
+						transporter.sendMail(mailOptions, function(err, info){
+							if (err){
+								throw err;
+							} else {
+								return done(null, {'email': email, 'user_id': rows.insertId});
+							}
+						})
 					})
 				})
 			}
 		})
 	}
 ))
+
+app.get("/verification/request", function(req, res){
+	res.status(403).json('Verification email has been sent.')
+})
+
+app.get("/verification/:token/:email", VerificationController);
+
+function VerificationController(req, res){
+	connection.query("SELECT * FROM users where email='"+req.params.email+"'", function(err, rows){
+		if (err){
+			return res.status(404).json('Email not found');
+		} else if (rows[0].authenticated){
+			return res.status(202).json('Email Already Verified');
+		} else {
+			Token.findOne({
+				_userId: rows[0].user_id,
+				token: req.params.token
+			}, function(err, foundToken){
+				if(foundToken){
+					connection.query("UPDATE users SET authenticated=1 WHERE email='"+req.params.email+"'", function(err, res){
+						if(err){
+							return res.status(403).json('verification failed');
+						}else{
+							return res.status(403).json('Account has been verified');
+						}
+					})
+				}
+				else if (err){
+					throw err;
+				}
+				else {
+					return res.status(404).json('Token expired');
+				}
+			})
+		}
+	})
+}
+
 
 app.get('/logout', function(req, res){
 	req.logout();

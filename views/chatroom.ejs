@@ -28,7 +28,12 @@
         padding-top: 5px;
         padding-left: 15px;
       }
-
+      .message_user {
+        font-size: 17px;
+        padding-top: 5px;
+        padding-left: 15px;
+        color: blue;
+      }
       .message_nickname {
         display: inline; 
         font-weight: bold;
@@ -41,8 +46,21 @@
         display: inline;
         color: grey;
       }
+      .message_content_user {
+        padding-left: 5px;
+        padding-top: 10px;
+        display: inline;
+        color: #4a4a4a;
+      }
       #king {
-        color: red;
+        color: blue;
+      }
+
+      #messages{
+        height: 46em;
+        width: 64em;
+        overflow-y: auto;
+        padding-bottom: 5px;
       }
     </style>
     <script src="/socket.io/socket.io.js"></script>
@@ -55,6 +73,7 @@
   $(function () {
     //socket.io 서버에 접속하기 위한 메소드
     var socket = io();
+    scrollToBottom();
     $('form').submit(function(e){
       e.preventDefault(); // prevents page reloading
       //서버로 메세지 송신
@@ -69,19 +88,34 @@
     });
     //접속되어있는 서버로부터 메세지 수신
     socket.on('chat message', function(msg){
+      if (msg.nickname == chatroom_nickname){
+      $('#messages').append("<div class='message_user'><div class='message_nickname'>" + msg.nickname + "</div>" + ": " + "<div class='message_content_user'>" + msg.message + "</div></div>");
+      } else {
       $('#messages').append("<div class='message'><div class='message_nickname'>" + msg.nickname + "</div>" + ": " + "<div class='message_content'>" + msg.message + "</div></div>");
+      }
+      scrollToBottom();
     });
   });
+  function scrollToBottom(){
+    messages.scrollTop = messages.scrollHeight;
+  }
+
 </script>
   </head>
   <body>
     <div class="chat-content">
     <div id="messages">
       <% chatroom.messages.forEach(function(messages){%>
+      <% if (messages.nickname == user_nickname){ %>
+      <div class="message_user">
+        <div class="message_nickname"><%=messages.nickname%></div>: <div class="message_content_user"><%= messages.message %></div>
+      </div>
+      <%} else {%>
       <div class="message">
         <div class="message_nickname"><%=messages.nickname%></div>: <div class="message_content"><%= messages.message %></div>
       </div>
-      <%})%>
+      <%};%>
+      <%});%>
     </div>
     <form> 
       <input id="m" name="message" type="text"><button>Send</button>
