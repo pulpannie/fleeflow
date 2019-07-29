@@ -21,7 +21,9 @@ let str_createUsers = `create table if not exists users(
     password varchar(100) NOT NULL,
     nickname varchar(20) NOT NULL,
     email varchar(45) NOT NULL,
-    authenticated tinyint(1) NOT NULL default 0,
+    gender varchar(20) NOT NULL,
+    age int NOT NULL,
+    verified tinyint(1) NOT NULL default 0,
     PRIMARY KEY (user_id)
     )`;
 

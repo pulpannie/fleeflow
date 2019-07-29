@@ -5,6 +5,17 @@
 	<link rel="stylesheet" href="search.css">
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
 	<link rel="stylesheet" href="index.css">
+	<style type="text/css">
+		#empty {
+			padding-left: 2em;
+			color: grey;
+		}
+		.header{
+		padding-bottom: 0px;
+		line-height: 10px
+	}
+	</style>
+
 </head>
 <body>
 	<% include ./partials/navbar %>
@@ -12,14 +23,24 @@
 		<h1 class="header"> Search results for <%= searched %> </h1>
 		<div class= "container-of-chatrooms">
 		<div class = "parent-chatroom">
+		<% if (chatrooms.length == 0){%>
+			<div>
+				<p id="empty">No chatrooms! Would you like to make one?</p>
+			</div>
+		<%}else{%>
 		<% chatrooms.forEach(function(chatroom){%>
 				<div class="chatroom rounded">
 					<h2><a href="/chatroom/<%=chatroom.chatroom_id%>"><%=chatroom.chatroom_name%></a></h2>
 					<h4> Created by: <%= chatroom.king_user_id%> </h4>
 				</div>
-			<%});%>
+			<%})};%>
 		</div>
 	</div>
+</div>
+<div class="parent-new">
+	<div class="new">
+		<a href="/new" class="btn btn-primary btn-circle btn-lg">New</a>
 	</div>
+</div>
 </body>
 </html>

@@ -112,11 +112,10 @@ app.get("/new", isLoggedIn, function(req, res){
 app.get('/search', function(req, res){
 	// var search = createSearch(req.query);
 	connection.query('SELECT * FROM chatrooms WHERE chatroom_name LIKE "%' + req.query.searchText + '%"', function(err, rows){
-		if (err) console.log("connection error is" + JSON.stringify(err));
-		else if (rows.length == 0) {
-			return console.log("rows:" + rows[0] + " " + Error);
-		}
+		if (err) throw err;
+		else {
 		res.render("search", {searched: req.query.searchText, chatrooms: rows});
+		}
 	});
 });
 
@@ -187,7 +186,7 @@ passport.use('join-local', new LocalStrategy({
 			}
 			else {
 				bcrypt.hash(password, 10, function(err, hash){
-					var sql = {email: email, password: hash, nickname: req.body.nickname};
+					var sql = {email: email, password: hash, nickname: req.body.nickname, gender: req.body.gender, age: req.body.age};
 					connection.query('insert into users set ?', sql, function (err, rows){
 						if (err) {
 							throw err;
@@ -222,7 +221,7 @@ function VerificationController(req, res){
 	connection.query("SELECT * FROM users where email='"+req.params.email+"'", function(err, rows){
 		if (err){
 			return res.status(404).json('Email not found');
-		} else if (rows[0].authenticated){
+		} else if (rows[0].verified){
 			return res.status(202).json('Email Already Verified');
 		} else {
 			Token.findOne({
@@ -231,7 +230,7 @@ function VerificationController(req, res){
 			}, function(err, foundToken){
 				console.log(foundToken);
 				if(foundToken){
-					connection.query("UPDATE users SET authenticated=1 WHERE email='"+req.params.email+"'", function(err, row){
+					connection.query("UPDATE users SET verified=1 WHERE email='"+req.params.email+"'", function(err, row){
 						if(err){
 							return res.status(403).json('verification failed');
 						}else{
