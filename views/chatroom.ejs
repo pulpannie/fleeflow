@@ -62,6 +62,10 @@
         overflow-y: auto;
         padding-bottom: 5px;
       }
+
+      #image{
+        background-color: grey;
+      }
     </style>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -74,17 +78,38 @@
     //socket.io 서버에 접속하기 위한 메소드
     var socket = io();
     scrollToBottom();
-    $('form').submit(function(e){
+    $('#fileUploadForm').submit(function(e){
       e.preventDefault(); // prevents page reloading
+      
+      var form = $('#fileUploadForm')[0];
+      var data = new FormData(form);
+      $("#btnSubmit").prop("disabled", true);
       //서버로 메세지 송신
-      socket.emit('chat message', $('#m').val());
+      socket.emit('chat message', data);
       $.ajax({
         type: "POST",
         url: "/chatroom/" + chatroom_id,
+        enctype: 'multipart/form-data',
         dataType: "application/x-www-form-urlencoded",
-        data: {message:$('#m').val()}
+        processData: false,
+        contentType: false,
+        cache: false,
+
+        data: data,
+        success: function (data) {
+                $("#btnSubmit").prop("disabled", false);
+                $('#m').val('');
+                $('#image').val('');
+                alert("complete");
+              },
+        error: function (error) {
+                console.log("ERROR : ", error);
+                $("#btnSubmit").prop("disabled", false);
+                $('#m').val('');
+                $('#image').val('');
+                alert("false");
+              }
       });
-      $('#m').val('');
     });
     //접속되어있는 서버로부터 메세지 수신
     socket.on('chat message', function(msg){
@@ -117,8 +142,10 @@
       <%};%>
       <%});%>
     </div>
-    <form> 
-      <input id="m" name="message" type="text"><button>Send</button>
+    <form id="fileUploadForm" enctype="multipart/form-data"> 
+      <input id="image" type="file" name="img_file" accept=".jpg, .jpeg, .png">
+      <input id="m" type="text" name="message">
+      <button id="btnSubmit">Send</button>
     </form>
   </div>
   <div class="chat-metadata">

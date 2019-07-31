@@ -18,11 +18,15 @@ var express = require('express'),
 	bodyParser = require("body-parser"),
 	session = require("express-session"),
 	cookieParser = require("cookie-parser"),
+	formidable = require("formidable"),
+	async = require("async"),
+	Upload = require('./service/UploadService'),
 	Message = require("./models/message"),
 	Chatroom = require("./models/chatroom"),
 	Token = require("./models/token");
 
 mongoose.connect(process.env.DATABASEURL, {useNewUrlParser: true});
+process.setMaxListeners(0);
 
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended: true}));
@@ -249,6 +253,14 @@ function VerificationController(req, res){
 	})
 }
 
+app.get('/profile', function(req, res){
+	connection.query('select * from users where user_id=?',[req.user], function(err, rows){
+		if(err){ throw err;
+		} else {
+			res.render("profile", {user: rows[0]});
+		}
+	});
+});
 
 app.get('/logout', function(req, res){
 	req.logout();
@@ -280,34 +292,53 @@ app.get('/chatroom/:id', isLoggedIn, function(req, res){
 	})
 })
 
+
+
 app.post('/chatroom/:id', function(req, res){
-	console.log("2req.user first is" + req.user);
 	Chatroom.findById(req.params.id, function(err, chatroom){
 		if(err){
 			console.log(err);
 			res.redirect("/");
 		} else {
-			Message.create(req.body, function(err, message){
-				if (err){
-					console.log(err);
-				} else {
-					console.log("req.user is" + req.user);
-					connection.query('select nickname from users where user_id=?',[req.user], function(err, rows){
-						if(err){
-							console.log(err);
-						}
-						message.nickname = rows[0].nickname;
-						message.save();
-						chatroom.messages.push(message);
-						chatroom.save();
-						//접속된 모든 클라이언트한테 메세지를 전송한다.
-						io.emit('chat message', message);
-					})
+				console.log(req.body);
+				console.log("hi"+req.body.message);
+				var tasks = [
+					function(callback){
+						var form = new formidable.IncomingForm({
+								encoding: 'utf-8',
+								multiples: true,
+								keepExtensions: false
+							});
+						form.parse(req, function(err, fields, files){
+							console.log(fields);
+							if(files){
+							console.log(files);
+							callback(err, files);
+							}
+						});
+					},
+					function(files, callback){
+						Upload.s3(req, files, function(err, result){
+							callback(err, files);
+						});
+					}
+				];
+				async.waterfall(tasks, function(err, result){
+					if(err){
+						res.json({success:true, msg:'업로드 실패', err:err})
+					}else{
+						messageCreate(req, result.Location, "img", chatroom, res);
+						
+					}
+				});
+				if(req.body.message){
+						console.log(req.body.message);
+						messageCreate(req, req.body.message, "msg", chatroom, res);
 				}
-			})
 		}
 	})
 })
+
 
 //connection event handler
 //connection이 수립되면 function의 인자로 socket이 들어온다.
@@ -325,6 +356,27 @@ function isLoggedIn(req, res, next){
 	}
 }
 
+function messageCreate(req, data, type, chatroom, res){
+	Message.create({message: data, type: type}, function(err, message){
+		if (err){
+			console.log(err);
+		} else {
+			console.log("req.user is" + req.user);
+			connection.query('select nickname from users where user_id=?',[req.user], function(err, rows){
+				if(err){
+					console.log(err);
+				}
+				message.nickname = rows[0].nickname;
+				message.save();
+				console.log(message);
+				chatroom.messages.push(message);
+				chatroom.save();
+				//접속된 모든 클라이언트한테 메세지를 전송한다.
+				io.emit('chat message', message);
+			})
+		}
+	})
+}
 // function createSearch(queries){
 
 // 	var findPost = {};

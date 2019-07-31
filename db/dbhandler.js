@@ -23,6 +23,8 @@ let str_createUsers = `create table if not exists users(
     email varchar(45) NOT NULL,
     gender varchar(20) NOT NULL,
     age int NOT NULL,
+    profile_picture varchar(200) NOT NULL default 'https://fleeflow.s3.ap-northeast-2.amazonaws.com/profile/profile_picture.png',
+    description varchar(200) NOT NULL default '',
     verified tinyint(1) NOT NULL default 0,
     PRIMARY KEY (user_id)
     )`;

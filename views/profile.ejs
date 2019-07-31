@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Search results</title>
+	<link rel="stylesheet" href="search.css">
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+	<link rel="stylesheet" href="index.css">
+<style>
+	.main{
+		text-align: center;
+	}
+	img{
+
+	}
+	p{
+		text-align: left;
+		padding-left: 30%;
+	}
+</style>
+
+</head>
+<body>
+	<% include ./partials/navbar %>
+	<div class="main">
+		<div>
+			<img width="200px" height="160px" src="https://fleeflow.s3.ap-northeast-2.amazonaws.com/profile/profile_picture.png">
+		</div>
+		<div>
+			<h2><%=user.nickname%></h2>
+		</div>
+		<div>
+			<p>Description: <%=user.description%></p>
+		</div>
+	</div>
+</body>
+</html>
