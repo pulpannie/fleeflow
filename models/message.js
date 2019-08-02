@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 
 //SCHEMA SETUP
 var messageSchema = new mongoose.Schema({
-	type: String,
+	typeOf: String,
 	message: String,
 	nickname: String
 });

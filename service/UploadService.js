@@ -40,10 +40,10 @@ Upload.formidable = function(req, callback){
 
 
 Upload.s3 = function(req, files, callback){
-	params.Key = 'chatrooms/messages/images/'+req.user+Date.now+req.body.img_file;
-	params.Body = require('fs').createReadStream(files[0].path);
+	params.Key = 'chatrooms/messages/images/'+req.user+Date.now();
+	params.Body = require('fs').createReadStream(files.img_file.path);
 	s3.upload(params, function(err,result){
-		callback(err, result);
+		callback(err, params.Key);
 	});
 }
 

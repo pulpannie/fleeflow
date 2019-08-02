@@ -51,13 +51,16 @@
         padding-top: 10px;
         display: inline;
         color: #4a4a4a;
+        width:auto; 
+        text-align:center; 
+        padding:20px; 
       }
       #king {
         color: blue;
       }
 
       #messages{
-        height: 46em;
+        height: 35em;
         width: 64em;
         overflow-y: auto;
         padding-bottom: 5px;
@@ -65,6 +68,11 @@
 
       #image{
         background-color: grey;
+      }
+      #msg_img{
+        width: 50%; 
+        height: 50%; 
+        object-fit: contain;
       }
     </style>
     <script src="/socket.io/socket.io.js"></script>
@@ -95,30 +103,24 @@
         contentType: false,
         cache: false,
 
-        data: data,
-        success: function (data) {
-                $("#btnSubmit").prop("disabled", false);
-                $('#m').val('');
-                $('#image').val('');
-                alert("complete");
-              },
-        error: function (error) {
-                console.log("ERROR : ", error);
-                $("#btnSubmit").prop("disabled", false);
-                $('#m').val('');
-                $('#image').val('');
-                alert("false");
-              }
+        data: data
       });
+      $('#m').val('');
+      $('#image').val('');
+      $("#btnSubmit").prop("disabled", false);
     });
+
     //접속되어있는 서버로부터 메세지 수신
     socket.on('chat message', function(msg){
-      if (msg.nickname == chatroom_nickname){
-      $('#messages').append("<div class='message_user'><div class='message_nickname'>" + msg.nickname + "</div>" + ": " + "<div class='message_content_user'>" + msg.message + "</div></div>");
-      } else {
-      $('#messages').append("<div class='message'><div class='message_nickname'>" + msg.nickname + "</div>" + ": " + "<div class='message_content'>" + msg.message + "</div></div>");
+      var isUser = "message_user";
+      if (msg.nickname != chatroom_nickname){
+        isUser = "message";
       }
-      scrollToBottom();
+      if (msg.typeOf == 'msg'){
+      $('#messages').append("<div class="+isUser+"><div class='message_nickname'>" + msg.nickname + "</div>" + ": " + "<div class='message_content_user'>" + msg.message + "</div></div>");
+      } else {
+        $('#messages').append("<div class="+ isUser + "><div class='message_nickname'>" + msg.nickname + "</div>" + ": " + "<img class='message_content_user' id='msg_img' width='100px' height:'' src="+ msg.message +"></div>");
+      }
     });
   });
   function scrollToBottom(){

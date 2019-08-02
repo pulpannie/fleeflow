@@ -287,11 +287,39 @@ app.get('/chatroom/:id', isLoggedIn, function(req, res){
 					})
 				}
 				})
-			})	
+			})
 		}
 	})
 })
 
+function messageCreate(req, data, type, chatroom, res){
+	console.log("wow");
+	var tmpMessage = new Message();
+	// Message.create({message: data}, function(err, message){
+		// if (err){
+		// 	throw err;
+		// } else {
+			console.log("wow2")
+			tmpMessage.typeOf = type;
+			tmpMessage.message = data;
+			console.log("req.user is" + req.user);
+			connection.query('select nickname from users where user_id=?',[req.user], function(err, rows){
+				if(err){
+					throw err;
+				}
+				tmpMessage.nickname = rows[0].nickname;
+				tmpMessage.save();
+				console.log("message: ");
+				console.log(tmpMessage);
+				chatroom.messages.push(tmpMessage);
+				chatroom.save();
+				//접속된 모든 클라이언트한테 메세지를 전송한다.
+				io.emit('chat message', tmpMessage);
+				return tmpMessage;
+			})
+		// }
+	// })
+}
 
 
 app.post('/chatroom/:id', function(req, res){
@@ -310,31 +338,36 @@ app.post('/chatroom/:id', function(req, res){
 								keepExtensions: false
 							});
 						form.parse(req, function(err, fields, files){
-							console.log(fields);
-							if(files){
-							console.log(files);
-							callback(err, files);
+							if(files.img_file.size == 0){
+								console.log("1:\n");
+								return messageCreate(req, fields.message, "msg", chatroom, res);
+							}
+							else {
+								console.log("2:\n");
+								console.log(files);
+								callback(err, files);
 							}
 						});
 					},
 					function(files, callback){
 						Upload.s3(req, files, function(err, result){
-							callback(err, files);
+							callback(err, result);
 						});
 					}
 				];
 				async.waterfall(tasks, function(err, result){
 					if(err){
-						res.json({success:true, msg:'업로드 실패', err:err})
+						console.log(err);
 					}else{
-						messageCreate(req, result.Location, "img", chatroom, res);
+						console.log("result: ");
+						console.log(result);
+
+						var tmp = "https://fleeflow.s3.ap-northeast-2.amazonaws.com/"+result;
+						console.log(tmp);
+						messageCreate(req, tmp, "img", chatroom, res);
 						
 					}
 				});
-				if(req.body.message){
-						console.log(req.body.message);
-						messageCreate(req, req.body.message, "msg", chatroom, res);
-				}
 		}
 	})
 })
@@ -356,27 +389,7 @@ function isLoggedIn(req, res, next){
 	}
 }
 
-function messageCreate(req, data, type, chatroom, res){
-	Message.create({message: data, type: type}, function(err, message){
-		if (err){
-			console.log(err);
-		} else {
-			console.log("req.user is" + req.user);
-			connection.query('select nickname from users where user_id=?',[req.user], function(err, rows){
-				if(err){
-					console.log(err);
-				}
-				message.nickname = rows[0].nickname;
-				message.save();
-				console.log(message);
-				chatroom.messages.push(message);
-				chatroom.save();
-				//접속된 모든 클라이언트한테 메세지를 전송한다.
-				io.emit('chat message', message);
-			})
-		}
-	})
-}
+
 // function createSearch(queries){
 
 // 	var findPost = {};
