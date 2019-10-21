@@ -7,7 +7,7 @@ var express = require('express'),
 	io = require('socket.io')({
 		transports : ["xhr-polling"], wsEngine: 'ws'}),
 	io = io.listen(server),
-	mysql = require("mysql"),
+	connection = require('./database'),
 	mongoose = require("mongoose"),
 	crypto = require("crypto"),
 	nodemailer = require("nodemailer"),
@@ -54,14 +54,6 @@ passport.deserializeUser(function(user_id, done){
 	done(null, user_id);
 });
 
-//connect to mysql
-var connection = mysql.createConnection({
-	host: "project.chb2v39hpwdl.ap-northeast-2.rds.amazonaws.com",
-	user: "admin",
-	password: "hello2019!",
-	database: "projectdb"
-})
-connection.connect();
 
 //connect to nodemailer
 let transporter = nodemailer.createTransport({

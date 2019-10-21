@@ -2,68 +2,74 @@
 <html>
   <head>
     <title>Chatroom</title>
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
     <style>
       .chat-content {
 
       }
 
-      html, body { font: 13px Helvetica, Arial; height: 100%;}
-      form { background: #000; padding: 3px; position: absolute; bottom: 0px; width: 100%;}
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      .chat-metadata{
-   
+      html{ font: Helvetica, Arial; width: 100vw; height: 100vh; overflow: hidden;display: block; position: absolute;}
+      @media screen and (min-width: 993px){
+      body{ font: 2vw Helvetica, Arial; position: relative;}
       }
-      .users{
-        padding-left: 10px;
+      @media screen and (max-width: 992px){
+      	body{
+      		font-size: 20vw; position: relative;
+      	}
       }
-      #message {
+      @media screen and (max-width: 600px){
+        body{
+          font-size: 30vw; position: relative;
+        }
       }
+      form { background: grey; padding: 3px; position: relative; bottom: 0; }
+      form input { border: 0; padding: 10px; width: 60vw; margin-right: .5vw; display: inline;}
+      form button { width: 9vw; background: rgb(130, 224, 255); border: none; padding: 10px; display: inline;}
       #message_user {
         color: blue;
       }
       .message{
-      	font-size: 17px;
-      	padding-top: 1%;
-        padding-left: 3%;
+      	padding-top
       	position: relative;
+      	display: block;
       }
       .message_nickname {
-        position: absolute;
+        position: relative;
         font-weight: bold;
         display: inline-block;
-        overflow: auto;
+        padding-left: 7vw;
       }
-
+      .date_content {
+        display: inline-block;
+        color: grey;
+      }
       .message_content {
-        display: inline;
+        display: block;
         color: grey;
         position: relative;
-        left: 10%;
+        padding-left: 7vw;
       }
       #king {
         color: blue;
       }
 
       #messages{
-        overflow-y: auto;
-        padding-bottom: 5px;
-
+      	height: 92vh;
+		  position: relative;
+		  overflow-y: scroll;
       }
 
       #image{
         background-color: grey;
       }
       #msg_img{
-        width: 40%; 
-         
+        width: 40vw; 
+        
       }
       .container-fluid{
-      }
+      	overflow: auto;
+      }	
 
-      .flex-fill{
-      	flex:1;
-      }
     </style>
     <script src="/socket.io/socket.io.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -108,57 +114,61 @@
       if (msg.nickname != chatroom_nickname){
         isUser = "message";
       }
+      var date = new Date(msg.createdAt);
+      var d = date.getDate();
+      var m = date.getMonth() + 1;
+      var y = date.getFullYear();
+      var date = y + "-" + m + "-" + d;
       if (msg.typeOf == 'msg'){
-      $('#messages').append("<div id="+isUser+" class='message'><div class='message_nickname'>" + msg.nickname + ":"+"</div>" + "<div class='message_content'>" + msg.message + "</div></div>");
+      $('#messages').append("<div id="+isUser+" class='message'><div class='message_nickname'>" + msg.nickname +"</div>" + "<div class='date_content'>" + date + "</div>" + "<div class='message_content'>" + msg.message + "</div></div><hr>");
       } else {
-        $('#messages').append("<div id="+ isUser + " class='message'><div class='message_nickname'>" + msg.nickname + ": " + "</div>" + "<img class='message_content' id='msg_img' width='100px' height:'' src="+ msg.message +"></div>");
+        $('#messages').append("<div id="+ isUser + " class='message'><div class='message_nickname'>" + msg.nickname + "</div>" + "<div class='date_content'>" + date + "</div>" +  "<img class='message_content' id='msg_img' width='100px' height:'' src="+ msg.message +"></div>");
       }
-     $("#messages").animate({ scrollTop: $("#messages")(0).scrollHeight}, 2000);
      objDiv.scrollTop = objDiv.scrollHeight;
     });
-      objDiv.scrollTop = objDiv.scrollHeight;
   });
-
 
 </script>
   </head>
   <body> 
     <div class="chat-content container-fluid d-flex h-100 flex-column">
-    <div class="row flex-fill">
-    <div class="col-9 " style="padding-left:0px">
-    <div id="messages">
-      <% chatroom.messages.forEach(function(messages){%>
-      <% if (messages.nickname == user_nickname){ %>
-      <div id="message_user" class="message">
-      	<% if (messages.typeOf == "img") {%>
-      		<div class="message_nickname"><%=messages.nickname%>:</div> <img class="message_content" id='msg_img' src="<%= messages.message%>">
-     		 </div>
-     	<% }else{%>
-       		 <div class="message_nickname"><%=messages.nickname%>:</div> <div class="message_content"><%= messages.message %></div>
-      		</div>
-      	<%}%>
-      <%} else {%>
-      <% if (messages.typeOf == "img") {%>
-      <div id="message" class="message">
-      		<div class="message_nickname"><%=messages.nickname%>:</div> <img class="message_content" id='msg_img' src="<%= messages.message%>">
-      	</div>
-      	<%}else{%>
-      <div id="message" class="message">
-        <div class="message_nickname"><%=messages.nickname%>:</div> <div class="message_content"><%= messages.message %></div>
+    	<div class="row flex-fill">
+    		<div class="col-9 " style="padding-left:0px">
+		   	 <div id="messages">
+		      <% chatroom.messages.forEach(function(messages){%>
+		      <% if (messages.nickname == user_nickname){ %>
+		      <div id="message_user" class="message">
+                  <%var date = new Date(messages.createdAt);
+                    var d = date.getDate();
+                    var m = date.getMonth() + 1;
+                    var y = date.getFullYear();
+                    var date = y + "-" + m + "-" + d;%>
+              <img class="profile_picture">
+		      	<% if (messages.typeOf == "img") {%>
+		      		<div class="message_nickname"><%=messages.nickname%></div>
+              <div class='date_content'><%=date%></div> 
+              <img class="message_content" id='msg_img' src="<%= messages.message%>">
+		     		 </div>
+		     	<% }else{%>
+		       		<div class="message_nickname"><%=messages.nickname%></div>
+              <div class='date_content'><%=date%></div>
+              <div class="message_content"><%= messages.message %></div>
+		      		</div>
+              <hr>
+		      	<%}%>
+		      <%};%>
+		      <%});%>
       </div>
-      <%};%>
-      <%};%>
-      <%});%>
-  </div>
     <form id="fileUploadForm" enctype="multipart/form-data"> 
-      <input id="image" type="file" name="img_file" accept=".jpg, .jpeg, .png">
+      <label for="img_file"><img src="https://c7.uihere.com/icons/637/810/365/upload-608dda053d28b44479642d71692c02ea.png" width="20px"></label>
+      <input id="img_file" type="file" name="img_file" accept=".jpg, .jpeg, .png" value="" hidden>
       <input id="m" type="text" name="message">
       <button id="btnSubmit">Send</button>
     </form>
   </div>
   <div class="chat-metadata col-3">
-    <div class="users">
-      <h1>Users</h1>
+    <div id="users">
+      <h4>Users</h4>
       <div>Online</div>
       <% roomData.forEach(function(nickname){%>
         <% if (nickname.user_id == nickname.king_user_id){ %>
@@ -167,9 +177,9 @@
           <div><%=nickname.nickname%></div>
         <%}%>
       <%});%>
+      </div>
+	   </div>
     </div>
-	</div>
-</div>
   </div>
   </body>
 </html>

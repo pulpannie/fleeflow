@@ -4,7 +4,8 @@ var mongoose = require("mongoose");
 var messageSchema = new mongoose.Schema({
 	typeOf: String,
 	message: String,
-	nickname: String
+	nickname: String,
+	createdAt: {type: Date, default: Date.now}
 });
 
 module.exports = mongoose.model("Message", messageSchema);
