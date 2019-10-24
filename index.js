@@ -245,7 +245,7 @@ function VerificationController(req, res){
 	})
 }
 
-app.get('/profile', function(req, res){
+app.get('/profile', isLoggedIn, function(req, res){
 	connection.query('select * from users where user_id=?',[req.user], function(err, rows){
 		if(err){ throw err;
 		} else {
@@ -253,6 +253,48 @@ app.get('/profile', function(req, res){
 		}
 	});
 });
+
+app.post('/profile', function(req, res){
+	console.log("POST PROFILE");
+	var tasks = [
+	function(callback){
+		var form = new formidable.IncomingForm({
+			encoding: 'utf-8',
+			multiples: true,
+			keepExtensions: false
+		});
+		form.parse(req, function(err, fields, files){
+			if(files.img_file.size == 0){
+				res.redirect("/profile")
+				}
+			else {
+				console.log("2:");
+				console.log(files);
+				callback(err, files);
+				}
+			});
+		},
+		function(files, callback){
+			Upload.s3profile(req, files, function(err, result){
+				callback(err, result);
+			});
+		}
+	];
+		async.waterfall(tasks, function(err, result){
+			if(err){
+				console.log(err);
+			}else{
+				var tmp = "https://fleeflow.s3.ap-northeast-2.amazonaws.com/"+result;
+				connection.query("UPDATE users set profile_picture='" + tmp + "' where user_id=?",[req.user], function(err){
+					if (err){
+						console.log("Error" + err);
+					}
+					console.log("WHY IS IT NOT WORKING")
+					res.redirect("/profile")
+				})
+			}
+		});
+})
 
 app.get('/logout', function(req, res){
 	req.logout();

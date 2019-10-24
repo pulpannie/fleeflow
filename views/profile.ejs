@@ -17,14 +17,20 @@
 		padding-left: 30%;
 	}
 </style>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script>
 
+</script>
 </head>
 <body>
 	<% include ./partials/navbar %>
 	<div class="main">
 		<div>
-			<img width="200px" height="160px" src="https://fleeflow.s3.ap-northeast-2.amazonaws.com/profile/profile_picture.png">
+			<img width="200px" height="160px" src="<%=user.profile_picture%>">
 		</div>
+		<form id="fileUploadForm" action="/profile" enctype="multipart/form-data" method="post"> 
+	      <input id="img_file" type="file" name="img_file" accept=".jpg, .jpeg, .png" value='' onchange="this.form.submit();" >
+	    </form>
 		<div>
 			<h2><%=user.nickname%></h2>
 		</div>

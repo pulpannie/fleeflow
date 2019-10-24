@@ -47,4 +47,12 @@ Upload.s3 = function(req, files, callback){
 	});
 }
 
+Upload.s3profile = function(req, files, callback){
+	params.Key = 'profile/'+req.user+Date.now();
+	params.Body = require('fs').createReadStream(files.img_file.path);
+	s3.upload(params, function(err,result){
+		callback(err, params.Key);
+	});
+}
+
 module.exports = Upload;

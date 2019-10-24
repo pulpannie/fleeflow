@@ -49,8 +49,15 @@
         position: relative;
         padding-left: 7vw;
       }
+
+      .profile_picture{
+        height: 5vh;
+        display: inline-block;
+      }
+
       #king {
         color: blue;
+        display: inline-block;
       }
 
       #messages{
@@ -171,10 +178,13 @@
       <h4>Users</h4>
       <div>Online</div>
       <% roomData.forEach(function(nickname){%>
+        <img class="profile_picture" src="<%=nickname.profile_picture%>">
         <% if (nickname.user_id == nickname.king_user_id){ %>
           <div id='king'><%= nickname.nickname%></div>
         <% } else {%>
+
           <div><%=nickname.nickname%></div>
+
         <%}%>
       <%});%>
       </div>
