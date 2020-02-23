@@ -5,16 +5,6 @@
 	<link rel="stylesheet" href="search.css">
 	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
 	<link rel="stylesheet" href="index.css">
-	<style type="text/css">
-		#empty {
-			padding-left: 2em;
-			color: grey;
-		}
-		.header{
-		padding-bottom: 0px;
-		line-height: 10px
-	}
-	</style>
 
 </head>
 <body>
@@ -31,7 +21,7 @@
 		<% chatrooms.forEach(function(chatroom){%>
 				<div class="chatroom rounded">
 					<h2><a href="/chatroom/<%=chatroom.chatroom_id%>"><%=chatroom.chatroom_name%></a></h2>
-					<h4> Created by: <%= chatroom.king_user_id%> </h4>
+					<h4> Created by: <%= chatroom.nickname%> </h4>
 				</div>
 			<%})};%>
 		</div>

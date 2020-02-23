@@ -23,7 +23,8 @@ var express = require('express'),
 	Upload = require('./service/UploadService'),
 	Message = require("./models/message"),
 	Chatroom = require("./models/chatroom"),
-	Token = require("./models/token");
+	Token = require("./models/token"),
+	cache = require('./cache-service');
 
 mongoose.connect(process.env.DATABASEURL, {useNewUrlParser: true});
 process.setMaxListeners(0);
@@ -107,7 +108,7 @@ app.get("/new", isLoggedIn, function(req, res){
 
 app.get('/search', function(req, res){
 	// var search = createSearch(req.query);
-	connection.query('SELECT * FROM chatrooms WHERE chatroom_name LIKE "%' + req.query.searchText + '%"', function(err, rows){
+	connection.query('SELECT * FROM chatrooms JOIN users ON king_user_id=user_id WHERE chatroom_name LIKE "%' + req.query.searchText + '%"', function(err, rows){
 		if (err) throw err;
 		else {
 		res.render("search", {searched: req.query.searchText, chatrooms: rows});
@@ -329,30 +330,35 @@ app.get('/chatroom/:id', isLoggedIn, function(req, res){
 function messageCreate(req, data, type, chatroom, res){
 	console.log("wow");
 	var tmpMessage = new Message();
-	// Message.create({message: data}, function(err, message){
-		// if (err){
-		// 	throw err;
-		// } else {
-			console.log("wow2")
-			tmpMessage.typeOf = type;
-			tmpMessage.message = data;
-			console.log("req.user is" + req.user);
-			connection.query('select nickname from users where user_id=?',[req.user], function(err, rows){
-				if(err){
-					throw err;
-				}
-				tmpMessage.nickname = rows[0].nickname;
-				tmpMessage.save();
-				console.log("message: ");
-				console.log(tmpMessage);
-				chatroom.messages.push(tmpMessage);
-				chatroom.save();
-				//접속된 모든 클라이언트한테 메세지를 전송한다.
-				io.emit('chat message', tmpMessage);
-				return tmpMessage;
-			})
-		// }
-	// })
+	console.log("messageCreate")
+	tmpMessage.typeOf = type;
+	tmpMessage.message = data;
+	console.log("messageCreate: req.user is" + req.user);
+			// connection.query('select nickname from users where user_id=?',[req.user], function(err, rows){
+			// 	if(err){
+			// 		throw err;
+			// 	}
+	var nickname
+	async.waterfall([
+		function(callback){
+			cache.getUser(req.user).then(function(nickname){
+			callback(null, nickname);
+		})
+		},
+		function(nickname, callback){
+			console.log("user is", nickname, req.user);
+			tmpMessage.nickname = nickname
+			tmpMessage.save();
+			chatroom.messages.push(tmpMessage);
+			chatroom.save();
+			console.log("messageCreate: successful");
+			//접속된 모든 클라이언트한테 메세지를 전송한다.
+			io.emit('chat message', tmpMessage);
+			callback(null, tmpMessage);
+		}
+	], function(err, result){
+		return result;
+	})
 }
 
 
@@ -363,7 +369,7 @@ app.post('/chatroom/:id', function(req, res){
 			res.redirect("/");
 		} else {
 				console.log(req.body);
-				console.log("hi"+req.body.message);
+				console.log("message_body:"+req.body.message);
 				var tasks = [
 					function(callback){
 						var form = new formidable.IncomingForm({
