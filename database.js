@@ -4,10 +4,10 @@ var mysql = require("mysql");
 //connect to mysql
 var pool = mysql.createPool({
 	connectionLimit: 10,
-	host: "project.chb2v39hpwdl.ap-northeast-2.rds.amazonaws.com",
-	user: "admin",
-	password: "hello2019!",
-	database: "projectdb"
+	host: "",
+	user: "",
+	password: "",
+	database: ""
 })
 
 pool.getConnection((err, connection) => {
