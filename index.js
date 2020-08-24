@@ -60,8 +60,8 @@ passport.deserializeUser(function(user_id, done){
 let transporter = nodemailer.createTransport({
 	service: 'gmail',
 	auth: {
-		user:'fleeflow.official@gmail.com',
-		pass: 'hello2019!'
+		user:'',
+		pass: ''
 	}
 });
 
@@ -191,8 +191,8 @@ passport.use('join-local', new LocalStrategy({
 						var token = new Token({_userId: rows.insertId, token: crypto.randomBytes(16).toString('hex')});
 						console.log(token);
 						//send the email
-						var transporter = nodemailer.createTransport({service: 'gmail', auth: {user:'fleeflow.official@gmail.com', pass: 'hello2019!'}});
-						var mailOptions = {from: 'fleeflow.official@gmail.com', to: email, subject: 'Account Verification Token', text:'Hello, please verify by clicking the link: \nhttp:\/\/'+req.headers.host + '\/verification\/' + token.token + '\/'+email+'.\n'};
+						var transporter = nodemailer.createTransport({service: 'gmail', auth: {user:'', pass: ''}});
+						var mailOptions = {from: '', to: email, subject: 'Account Verification Token', text:'Hello, please verify by clicking the link: \nhttp:\/\/'+req.headers.host + '\/verification\/' + token.token + '\/'+email+'.\n'};
 						transporter.sendMail(mailOptions, function(err, info){
 							if (err){
 								throw err;
